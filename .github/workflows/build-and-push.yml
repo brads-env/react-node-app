@@ -1,0 +1,79 @@
+name: 'reactApp'
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    env:
+      BUILD_NAME: 'reactApp'
+      IMAGE_NAME: 'reactappimage'
+      JFROG_BUILD_STATUS: PASS
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: JFrog CLI setup 🐸
+        uses: jfrog/setup-jfrog-cli@v4
+        env:
+          JF_URL: ${{ vars.JF_URL }}
+          JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
+
+      - name: Reconfigure server with basic auth only
+        run: |
+          jf c add myserver \
+            --url="${{ secrets.JF_URL }}" \
+            --access-token=${{ secrets.JF_ACCESS_TOKEN }} 
+        #   --basic-auth-only=true \
+        #   --interactive=false \
+        #   --overwrite=true
+
+      - name: Config NPM global
+        run: |
+          jf npmc --repo-resolve github-npm-dev-virtual --repo-deploy github-npm-dev-virtual --server-id-resolve=myserver --server-id-deploy=myserver
+
+      #- name: "Curation: audit" # https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-security/cli-for-jfrog-curation
+     #   timeout-minutes: 15    # ref https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#jobsjob_idstepstimeout-minutes
+     #   continue-on-error: true    # ref: https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#jobsjob_idstepscontinue-on-error
+     #   run: |
+      #    jf ca --format=table --threads=10
+
+      - name: Build and publish npm Artifact
+        run: |
+          jf npm install --build-name ${{env.BUILD_NAME}} --build-number ${{github.run_number}}
+          jf npm publish --build-name ${{env.BUILD_NAME}} --build-number ${{github.run_number}}
+
+      #- name: Login to JFrog Docker Repo
+      #  uses: docker/login-action@v3
+      #  with:
+      #    registry: ${{ secrets.JF_URL }}
+      #    username: ${{ secrets.JF_USER }}
+      #    password: ${{ secrets.JF_PASSWORD }}
+
+      - name: Build and push Docker image 🐳
+        run: |
+          jf docker build . -t solengbrads.jfrog.io/github-docker-npm-dev-local/${{env.IMAGE_NAME}}:${{github.run_number}} \
+            --build-name ${{env.BUILD_NAME}} --build-number ${{github.run_number}}
+          jf docker push solengbrads.jfrog.io/github-docker-npm-dev-local/${{env.IMAGE_NAME}}:${{github.run_number}} \
+            --build-name ${{env.BUILD_NAME}} --build-number ${{github.run_number}}
+
+      - name: Collect the build-info and aggregate
+        run: |
+          # Collect and store environment variables in the build-info
+          jf rt bce ${{env.BUILD_NAME}} ${{github.run_number}}
+          # Collect and store VCS details in the build-info
+          jf rt bag ${{env.BUILD_NAME}} ${{github.run_number}}
+          jf rt bp ${{env.BUILD_NAME}} ${{github.run_number}}
+          jf rt bs ${{env.BUILD_NAME}} ${{github.run_number}}
