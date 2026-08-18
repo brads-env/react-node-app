@@ -34,7 +34,7 @@ jobs:
       - name: Reconfigure server with basic auth only
         run: |
           jf c add myserver \
-            --url="${{ secrets.JF_URL }}" \
+            --url="${{ vars.JF_URL }}" \
             --access-token=${{ secrets.JF_ACCESS_TOKEN }} 
         #   --basic-auth-only=true \
         #   --interactive=false \
