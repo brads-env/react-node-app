@@ -1,6 +1,6 @@
 # Base image from 
-FROM soleng.jfrog.io/alpha-docker-virtual/nginx:stable-alpine3.17-slim
-FROM soleng.jfrog.io/alpha-docker-virtual/node:22
+FROM solengbrads.jfrog.io/github-docker-npm-dev-virtual/nginx:stable-alpine3.17-slim
+FROM solengbrads.jfrog.io/github-docker-npm-dev-virtual/node:22
 
 # Create app directory
 RUN mkdir -p /usr/src/app
