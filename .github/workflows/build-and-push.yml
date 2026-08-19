@@ -85,4 +85,4 @@ jobs:
       # Add after build-publish step in your GitHub Actions or GitLab CI pipeline
       - name: Run Xray Scan 
         run: |
-          jf rt build-scan ${{env.BUILD_NAME}} ${{ github.run_number }}
+          jf build-scan ${{env.BUILD_NAME}} ${{ github.run_number }}
