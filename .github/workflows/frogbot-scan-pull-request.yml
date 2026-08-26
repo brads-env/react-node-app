@@ -19,6 +19,6 @@ jobs:
           JF_URL: ${{ vars.JF_URL }}
           JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
           JF_GIT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true 
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true 
         # with:
           # oidc-provider-name: <OIDC_PROVIDER_NAME>
