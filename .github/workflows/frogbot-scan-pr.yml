@@ -61,6 +61,14 @@ jobs:
           # The GitHub token automatically generated for the job
           JF_GIT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+        with:
+          command: auto-pr
+          component-name: ${{ inputs.component-name }}
+          affected-version: ${{ inputs.affected-version }}
+          fix-version: ${{ inputs.fix-version }}
+          branch-name: ${{ inputs.branch-name || github.event.repository.default_branch }}
+          commit-hash: ${{ inputs.commit-hash }}
+
 
           # [Optional]
           # If the machine that runs Frogbot has no access to the internat, set the name of a remote repository
